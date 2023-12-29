@@ -33,7 +33,7 @@ func init() {
 
 // 默认需登录认证的路由
 func registerPayMerchantRouter(v1 *gin.RouterGroup) {
-	v1.StaticFile("/", "resources/index.html")
+	//v1.StaticFile("/", "resources/index.html")
 
 	v1.GET("ws", wsHandler.ConnectGin)
 }

@@ -22,9 +22,9 @@ func NewBinaryMsg(data []byte) *Msg {
 	}
 }
 
-func NewTextMsg(data []byte) *Msg {
+func NewTextMsg(text string) *Msg {
 	return &Msg{
 		WsType: websocket.TextMessage,
-		Data:   data,
+		Data:   []byte(text),
 	}
 }
