@@ -51,6 +51,9 @@ func (wsc *WsChannal) readLoop() {
 			Data:   data,
 		}
 		go wsc.WsHandler.MsgHandler(wsc, req)
+		if !wsc.open {
+			goto closed
+		}
 	}
 error:
 	wsc.Close()
@@ -163,8 +166,9 @@ func (wsc *WsChannal) MustGet(key string) any {
 	if value, exists := wsc.Get(key); exists {
 		return value
 	}
-
-	panic("Key \"" + key + "\" does not exist")
+	//panic("Key \"" + key + "\" does not exist")
+	core.Log.Error("Key \"" + key + "\" does not exist")
+	return nil
 }
 
 func (wsc *WsChannal) Del(key string) {

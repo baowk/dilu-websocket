@@ -1,4 +1,4 @@
-package sever
+package server
 
 import (
 	"dilu-websocket/ws"
