@@ -18,17 +18,15 @@ type DefWsHandler struct {
 	config     *ws.WsConfig
 }
 
-var wsHandler = NewDefWsHandler()
+var wsHandler = NewDefWsHandler(&ws.WsConfig{
+	CheckOrigin:   true,
+	PingEnabled:   true,
+	PingPeriod:    time.Second * 10,
+	PingFailCount: 3,
+})
 
-func NewDefWsHandler() *DefWsHandler {
-	cfg := &ws.WsConfig{
-		CheckOrigin:   true,
-		PingEnabled:   true,
-		PingPeriod:    time.Second * 10,
-		PingFailCount: 3,
-	}
+func NewDefWsHandler(cfg *ws.WsConfig) *DefWsHandler {
 	wsUpgrader := websocket.Upgrader{
-		// 允许所有CORS跨域请求
 		CheckOrigin: func(r *http.Request) bool {
 			return cfg.CheckOrigin
 		},
