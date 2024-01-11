@@ -10,10 +10,10 @@ import (
 type WsHandler interface {
 	ConnectGin(c *gin.Context)
 	Connect(w http.ResponseWriter, r *http.Request)
-	Heartbeat(wsc *WsChannal)
+	Heartbeat(wsc *WsChannal) error
 	Send(deviceId string, data []byte) error
 	SendToGroup(groupId string, data []byte) error
-	SendAll(data []byte) error
+	Broadcast(data []byte) error
 	MsgHandler(wsc *WsChannal, msg *Msg)
 	Disconnect(wsc *WsChannal) error
 }
