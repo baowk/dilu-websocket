@@ -16,12 +16,12 @@ type WsHandler interface {
 	Broadcast(data []byte) error
 	MsgHandler(wsc *WsChannal, msg *Msg)
 	Disconnect(wsc *WsChannal) error
+	GetConfig() *WsConfig
 }
 
 type WsConfig struct {
-	CheckOrigin bool
-	WriteWait   time.Duration
-	ReadWait    time.Duration
-	PingPeriod  time.Duration
-	MaxMessage  int64
+	CheckOrigin   bool
+	PingEnabled   bool
+	PingPeriod    time.Duration
+	PingFailCount uint8
 }

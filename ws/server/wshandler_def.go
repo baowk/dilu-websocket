@@ -1,9 +1,10 @@
 package server
 
 import (
-	"dilu-websocket/ws"
 	"net/http"
 	"time"
+
+	"github.com/baowk/dilu-websocket/ws"
 
 	"github.com/baowk/dilu-core/core"
 	"github.com/gin-gonic/gin"
@@ -21,11 +22,10 @@ var wsHandler = NewDefWsHandler()
 
 func NewDefWsHandler() *DefWsHandler {
 	cfg := &ws.WsConfig{
-		CheckOrigin: true,
-		// WriteWait:   10 * 1000,
-		// ReadWait:    10 * 1000,
-		// PingPeriod:  60 * 1000,
-		// MaxMessage:  1024 * 1024 * 10,
+		CheckOrigin:   true,
+		PingEnabled:   true,
+		PingPeriod:    time.Second * 10,
+		PingFailCount: 3,
 	}
 	wsUpgrader := websocket.Upgrader{
 		// 允许所有CORS跨域请求
@@ -52,15 +52,14 @@ func (wsh *DefWsHandler) Connect(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	ws.NewWsChannl(wsSocket, wsh, true, time.Second*10, 3)
-
+	ws.NewWsChannl(wsSocket, wsh, wsh.config.PingEnabled, wsh.config.PingPeriod, wsh.config.PingFailCount)
 	core.Log.Debug("wsHandler.Connect end")
 }
 
 // 心跳
 func (wsh *DefWsHandler) Heartbeat(wsc *ws.WsChannal) error {
 	core.Log.Debug("wsHandler.Heartbeat", zap.String("ID:", wsc.GetId()))
-
+	//TODO 心跳下发
 	return nil
 }
 
@@ -80,7 +79,7 @@ func (wsh *DefWsHandler) SendToGroup(groupId string, data []byte) error {
 	cs := wsh.hub.GetGroup(groupId)
 	if cs != nil {
 		for _, v := range cs {
-			core.Log.Debug("wsHandler.SendToGroup：", zap.String(groupId, string(data)))
+			core.Log.Debug("wsHandler.SendToGroup：", zap.String(v.GetId(), string(data)))
 			v.Write(ws.NewBinaryMsg(data))
 		}
 	}
@@ -99,7 +98,7 @@ func (wsh *DefWsHandler) Broadcast(data []byte) error {
 // 断开链接
 func (wsh *DefWsHandler) Disconnect(wsc *ws.WsChannal) error {
 	core.Log.Debug("wsHandler.Disconnect start")
-
+	//TODO 断链处理
 	core.Log.Debug("wsHandler.Disconnect end")
 	return nil
 }
@@ -107,5 +106,10 @@ func (wsh *DefWsHandler) Disconnect(wsc *ws.WsChannal) error {
 // 读取消息处理
 func (wsh *DefWsHandler) MsgHandler(wsc *ws.WsChannal, msg *ws.Msg) {
 	core.Log.Debug("wsHandler.HandlerMsg")
+	//TODO 消息处理
 	return
+}
+
+func (wsh *DefWsHandler) GetConfig() *ws.WsConfig {
+	return wsh.config
 }

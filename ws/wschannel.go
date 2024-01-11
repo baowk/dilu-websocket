@@ -11,36 +11,27 @@ import (
 )
 
 type WsChannal struct {
-	Conn        *websocket.Conn //socket链接
-	Ctx         map[string]any  //上下文
-	Output      chan *Msg       //写队列
-	open        bool            //是否打开
-	rwmutex     *sync.RWMutex   //读写锁
-	CloseChan   chan byte       // 关闭通知
-	WsHandler   WsHandler       //处理器
-	hbEnabled   bool            //心跳开关
-	hbDuration  time.Duration   //心跳时长
-	hbFailCount uint8           //心跳失败次数
+	Conn      *websocket.Conn //socket链接
+	Ctx       map[string]any  //上下文
+	Output    chan *Msg       //写队列
+	open      bool            //是否打开
+	rwmutex   *sync.RWMutex   //读写锁
+	CloseChan chan byte       // 关闭通知
+	WsHandler WsHandler       //处理器
 }
 
 func NewWsChannl(conn *websocket.Conn, wsHandler WsHandler, heartbeatEnabled bool, heartbeatDuration time.Duration, heartbeatFailCount uint8) *WsChannal {
 	wsc := &WsChannal{
-		Conn:        conn,
-		WsHandler:   wsHandler,
-		hbDuration:  heartbeatDuration,
-		hbFailCount: heartbeatFailCount,
-		hbEnabled:   heartbeatEnabled,
-		CloseChan:   make(chan byte, 1),
-		Output:      make(chan *Msg, 1000),
-		rwmutex:     new(sync.RWMutex),
-		open:        true,
-	}
-	if wsc.hbDuration < time.Second {
-		wsc.hbDuration = time.Second * 10
+		Conn:      conn,
+		WsHandler: wsHandler,
+		CloseChan: make(chan byte, 1),
+		Output:    make(chan *Msg, 1000),
+		rwmutex:   new(sync.RWMutex),
+		open:      true,
 	}
 	go wsc.readLoop()
 	go wsc.writeLoop()
-	if wsc.hbEnabled {
+	if wsHandler.GetConfig().PingEnabled {
 		go wsc.heartbeat()
 	}
 	return wsc
@@ -52,14 +43,14 @@ func (wsc *WsChannal) heartbeat() {
 		if wsc.IsClosed() {
 			return
 		}
-		time.Sleep(wsc.hbDuration)
+		time.Sleep(wsc.WsHandler.GetConfig().PingPeriod)
 		err := wsc.WsHandler.Heartbeat(wsc)
 		if err != nil {
 			failCnt++
 		} else {
 			failCnt = 0
 		}
-		if failCnt > wsc.hbFailCount {
+		if failCnt > wsc.WsHandler.GetConfig().PingFailCount {
 			wsc.Close()
 			return
 		}

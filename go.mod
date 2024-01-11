@@ -1,9 +1,9 @@
-module dilu-websocket
+module github.com/baowk/dilu-websocket
 
 go 1.20
 
 require (
-	github.com/baowk/dilu-core v0.2.7
+	github.com/baowk/dilu-core v0.2.9
 	github.com/gin-gonic/gin v1.9.1
 	github.com/gorilla/websocket v1.5.1
 	go.uber.org/zap v1.26.0
