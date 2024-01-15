@@ -8,8 +8,6 @@
 package main
 
 import (
-	"dilu-websocket/ws/sever"
-	"dilu-websocket/ws/utils"
 	"encoding/binary"
 	"flag"
 	"log"
@@ -18,6 +16,8 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/baowk/dilu-websocket/example/gin/msg"
+	"github.com/baowk/dilu-websocket/ws/utils"
 	"github.com/gorilla/websocket"
 )
 
@@ -72,7 +72,7 @@ func main() {
 			log.Println("send:", t)
 
 			lm := []byte("token")
-			err := c.WriteMessage(websocket.BinaryMessage, utils.BuildMsg(sever.MsgType_LOGIN, lm))
+			err := c.WriteMessage(websocket.BinaryMessage, utils.BuildMsg(msg.MsgType_LOGIN, lm))
 			if err != nil {
 				log.Println("write:", err)
 				return
@@ -95,7 +95,6 @@ func main() {
 		}
 	}
 }
-
 func Int32ToBytes(i int32) []byte {
 	buf := make([]byte, 4)
 	binary.LittleEndian.PutUint32(buf, uint32(i))
