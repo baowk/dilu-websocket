@@ -6,7 +6,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/baowk/dilu-core/core"
 	"github.com/gorilla/websocket"
 )
 
@@ -70,7 +69,6 @@ func (wsc *WsChannal) readLoop() {
 		}
 
 		if msgType == websocket.PingMessage {
-			core.Log.Debug("socket ping")
 			if err := wsc.Conn.WriteMessage(websocket.PongMessage, nil); err != nil {
 				goto error
 			}
@@ -81,7 +79,6 @@ func (wsc *WsChannal) readLoop() {
 			WsType: msgType,
 			Data:   data,
 		}
-		core.Log.Debug("Read message")
 		go wsc.WsHandler.MsgHandler(wsc, req)
 		if !wsc.open {
 			goto closed
@@ -113,14 +110,15 @@ closed:
 const id_name = "id"
 
 func (c *WsChannal) GetId() string {
-	// c.rwmutex.RLock()
-	// defer c.rwmutex.RUnlock()
-	v, ok := c.Ctx[id_name]
-	if !ok {
-		v = c.Conn.RemoteAddr().String()
-		c.Ctx[id_name] = v
+	if c.open {
+		v, ok := c.Ctx[id_name]
+		if !ok {
+			v = c.Conn.RemoteAddr().String()
+			c.Ctx[id_name] = v
+		}
+		return v.(string)
 	}
-	return v.(string)
+	return ""
 }
 
 func (c *WsChannal) SetId(id string) {
@@ -139,7 +137,6 @@ func (c *WsChannal) Write(msg *Msg) error {
 }
 
 func (c *WsChannal) Close() {
-	core.Log.Debug("close websocket" + c.GetId())
 	c.rwmutex.Lock()
 	defer c.rwmutex.Unlock()
 	//处理关闭

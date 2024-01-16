@@ -2,9 +2,6 @@ package ws
 
 import (
 	"sync"
-
-	"github.com/baowk/dilu-core/core"
-	"go.uber.org/zap"
 )
 
 type Hub struct {
@@ -22,19 +19,15 @@ func NewHub() *Hub {
 }
 
 func (h *Hub) Add(clientId string, wsChan *WsChannal) {
-	core.Log.Debug("add client", zap.String(clientId, "start"))
 	h.rwmutex.Lock()
 	defer h.rwmutex.Unlock()
 	h.clients[clientId] = wsChan
-	core.Log.Debug("add client", zap.String(clientId, "end"))
 }
 
 func (h *Hub) Del(clientId string) {
-	core.Log.Debug("del client", zap.String(clientId, "start"))
 	h.rwmutex.Lock()
 	defer h.rwmutex.Unlock()
 	delete(h.clients, clientId)
-	core.Log.Debug("del client", zap.String(clientId, "end"))
 }
 
 func (h *Hub) Get(clientId string) *WsChannal {
@@ -66,14 +59,12 @@ func (h *Hub) All() []*WsChannal {
 }
 
 func (h *Hub) AddGroup(groupId string, wsChan *WsChannal) {
-	core.Log.Debug("add AddGroup", zap.String(groupId, "start"))
 	h.rwmutex.Lock()
 	defer h.rwmutex.Unlock()
 	if h.group == nil {
 		h.group = make(map[string][]*WsChannal)
 	}
 	h.group[groupId] = append(h.group[groupId], wsChan)
-	core.Log.Debug("add AddGroup", zap.String(groupId, "end"))
 }
 
 func (h *Hub) GetGroup(groupId string) []*WsChannal {
@@ -86,7 +77,6 @@ func (h *Hub) GetGroup(groupId string) []*WsChannal {
 }
 
 func (h *Hub) DelFromGroup(groupId string, wsChan *WsChannal) {
-	core.Log.Debug("del DelFromGroup start", zap.String(groupId, "ok"))
 	h.rwmutex.Lock()
 	defer h.rwmutex.Unlock()
 	if h.group == nil {
@@ -104,5 +94,4 @@ func (h *Hub) DelFromGroup(groupId string, wsChan *WsChannal) {
 			delete(h.group, groupId)
 		}
 	}
-	core.Log.Debug("del DelFromGroup end", zap.String(groupId, "ok"))
 }

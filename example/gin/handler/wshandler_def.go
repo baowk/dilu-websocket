@@ -4,12 +4,12 @@ import (
 	"net/http"
 	"time"
 
+	"log"
+
 	"github.com/baowk/dilu-websocket/ws"
 
-	"github.com/baowk/dilu-core/core"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
-	"go.uber.org/zap"
 )
 
 type DefWsHandler struct {
@@ -45,25 +45,25 @@ func (wsh *DefWsHandler) ConnectGin(c *gin.Context) {
 
 // 链接
 func (wsh *DefWsHandler) Connect(w http.ResponseWriter, r *http.Request) {
-	core.Log.Debug("wsHandler.Connect")
+	log.Println("wsHandler.Connect")
 	wsSocket, err := wsh.wsUpgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return
 	}
 	ws.NewWsChannl(wsSocket, wsh, wsh.config.PingEnabled, wsh.config.PingPeriod, wsh.config.PingFailCount)
-	core.Log.Debug("wsHandler.Connect end")
+	log.Println("wsHandler.Connect end")
 }
 
 // 心跳
 func (wsh *DefWsHandler) Heartbeat(wsc *ws.WsChannal) error {
-	core.Log.Debug("wsHandler.Heartbeat", zap.String("ID:", wsc.GetId()))
+	log.Println("wsHandler.Heartbeat", wsc.GetId())
 	//TODO 心跳下发
 	return nil
 }
 
 // 单个发送消息
 func (wsh *DefWsHandler) Send(deviceId string, data []byte) error {
-	core.Log.Debug("wsHandler.Send", zap.String(deviceId, string(data)))
+	log.Println("wsHandler.Send", deviceId, string(data))
 	c := wsh.hub.Get(deviceId)
 	if c != nil {
 		return c.Write(ws.NewBinaryMsg(data))
@@ -73,11 +73,11 @@ func (wsh *DefWsHandler) Send(deviceId string, data []byte) error {
 
 // 发送组内消息
 func (wsh *DefWsHandler) SendToGroup(groupId string, data []byte) error {
-	core.Log.Debug("wsHandler.SendToGroup", zap.String(groupId, string(data)))
+	log.Println("wsHandler.SendToGroup", groupId, string(data))
 	cs := wsh.hub.GetGroup(groupId)
 	if cs != nil {
 		for _, v := range cs {
-			core.Log.Debug("wsHandler.SendToGroup：", zap.String(v.GetId(), string(data)))
+			log.Println("wsHandler.SendToGroup：", v.GetId(), string(data))
 			v.Write(ws.NewBinaryMsg(data))
 		}
 	}
@@ -86,7 +86,7 @@ func (wsh *DefWsHandler) SendToGroup(groupId string, data []byte) error {
 
 // 全部发送
 func (wsh *DefWsHandler) Broadcast(data []byte) error {
-	core.Log.Debug("wsHandler.Broadcast")
+	log.Println("wsHandler.Broadcast")
 	for _, v := range wsh.hub.All() {
 		v.Write(ws.NewBinaryMsg(data))
 	}
@@ -95,15 +95,15 @@ func (wsh *DefWsHandler) Broadcast(data []byte) error {
 
 // 断开链接
 func (wsh *DefWsHandler) Disconnect(wsc *ws.WsChannal) error {
-	core.Log.Debug("wsHandler.Disconnect start")
+	log.Println("wsHandler.Disconnect start")
 	//TODO 断链处理
-	core.Log.Debug("wsHandler.Disconnect end")
+	log.Println("wsHandler.Disconnect end")
 	return nil
 }
 
 // 读取消息处理
 func (wsh *DefWsHandler) MsgHandler(wsc *ws.WsChannal, msg *ws.Msg) {
-	core.Log.Debug("wsHandler.HandlerMsg")
+	log.Println("wsHandler.HandlerMsg")
 	//TODO 消息处理
 	return
 }
